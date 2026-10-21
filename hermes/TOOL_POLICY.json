@@ -1,0 +1,48 @@
+{
+  "version": "1.2.2-agent-safety-alpha",
+  "principle": "Hermes/Agnes use restricted deterministic tools; they do not receive unrestricted operator shell or broker secrets.",
+  "agent_allowed_commands": [
+    "status",
+    "snapshot",
+    "capabilities",
+    "skills",
+    "agent-policy",
+    "doctor",
+    "backtest",
+    "research",
+    "scan",
+    "walkforward",
+    "factors",
+    "journal",
+    "openbb-check",
+    "openbb-equity",
+    "openbb-macro",
+    "openbb-filings",
+    "qlib-check",
+    "qlib-ml",
+    "capm",
+    "portfolio",
+    "theories",
+    "promotion-check",
+    "gateway-check",
+    "circuit-status"
+  ],
+  "operator_only_commands": [
+    "paper",
+    "testnet",
+    "human-approve",
+    "circuit-halt",
+    "circuit-reset",
+    "dashboard",
+    "terminal"
+  ],
+  "never_expose_to_agent": [
+    "BINANCE_TESTNET_API_SECRET",
+    "BINANCE_TESTNET_API_KEY",
+    ".env raw contents",
+    "human approval creation",
+    "circuit reset control",
+    "unrestricted shell"
+  ],
+  "live_money": "disabled"
+}

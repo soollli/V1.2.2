@@ -1,0 +1,153 @@
+project:
+  name: ai-quant-terminal-core
+
+core:
+  # Stable interfaces. Swap adapters here without changing strategies/UI/Hermes.
+  # Binance remains the trading market truth source.
+  market_data_provider: binance
+  # OpenBB is a separate optional research-data fabric; it never places orders.
+  research_data_provider: openbb
+  research_engine: native
+  # Qlib is an optional ML research accelerator; it does not replace native validation.
+  ml_research_engine: qlib
+  execution_engine: native
+
+
+market:
+  symbol: BTCUSDT
+  interval: 1m
+  history_bars: 250
+  poll_seconds: 5
+
+strategy:
+  name: ema_rsi_demo
+  fast_ema: 9
+  slow_ema: 21
+  rsi_period: 14
+  buy_rsi_min: 50
+  sell_rsi_max: 50
+
+risk:
+  quote_order_size: 50.0
+  max_position_quote: 250.0
+  stop_loss_pct: 0.02
+  take_profit_pct: 0.04
+  fee_rate: 0.001
+  slippage_bps: 2
+
+broker:
+  mode: paper
+  initial_quote_balance: 10000.0
+
+storage:
+  history_cache_dir: data/cache/market
+  # {mode} keeps paper and testnet completely separated.
+  state_file: data/state_{mode}.json
+  trades_file: logs/trades_{mode}.csv
+  events_file: logs/events_{mode}.log
+
+research:
+  output_dir: research/results
+  journal_file: research/experiment_journal.jsonl
+  # Crypto is 24/7. Research metrics use 365-day annualization, not the 252 trading-day convention for stocks.
+  annualization: crypto_24x7
+
+agent:
+  # Default follows a Robinhood-like safe posture: research/propose first,
+  # trade approval on, no live-money authority. Agnes/Hermes never owns broker state.
+  autonomy_level: propose
+  trade_approval_required: true
+  live_money_enabled: false
+  max_agent_quote_order: 50.0
+  max_agent_position_quote: 250.0
+  disabled_skills: []
+
+promotion_gate:
+  ticket_ttl_hours: 24
+  minimum_walkforward_folds: 3
+  minimum_positive_oos_ratio: 0.67
+  maximum_parameter_variation_ratio: 1.0
+  maximum_drawdown_pct_abs: 25.0
+  minimum_excess_return_pct: 0.0
+  minimum_strategy_orders: 4
+  minimum_qlib_test_ic: 0.0
+
+monitoring:
+  # Bars, not calendar days. Keep explicit so changing the trading interval does not silently change the rule.
+  rolling_window_bars: 60
+  sharpe_alert_threshold: 0.0
+  drawdown_alert_pct: -5.0
+  slippage_alert_bps: 10.0
+
+factor_research:
+  # Small liquid crypto universe for the first cross-sectional factor lab.
+  universe: [BTCUSDT, ETHUSDT, BNBUSDT, SOLUSDT, XRPUSDT, ADAUSDT]
+  interval: 1h
+  momentum_period: 20
+  vol_period: 20
+  reversal_period: 5
+  forward_windows: [5, 10, 20]
+  min_assets: 5
+  group_min_assets: 4
+
+qlib_research:
+  # First Qlib integration uses Qlib's Forecast Model API on our canonical
+  # cross-sectional crypto panel. Raw data stays in the terminal's own schema.
+  estimator: ridge
+  alpha: 1.0
+  alpha_grid: [0.01, 0.1, 1.0, 10.0]
+  fit_intercept: true
+  purge_bars: 5
+  embargo_bars: 1
+  winsor_quantile: 0.01
+  forward_bars: 5
+  momentum_fast: 5
+  momentum_slow: 20
+  vol_period: 20
+  train_fraction: 0.60
+  valid_fraction: 0.20
+  min_assets: 5
+  portfolio_fraction: 0.30
+
+# Four-theory backtest battery (run.py theories): CAPM tercile sort, weak-form EMH,
+# Black-Scholes assumption tests on spot returns, cointegration-pair (stat-arb) check.
+# Deterministic; signals at t, positions at t+1; costs consistent with portfolio_research.
+theory_tests:
+  pairs:
+    - [BTCUSDT, ETHUSDT]
+    - [BNBUSDT, SOLUSDT]
+    - [XRPUSDT, ADAUSDT]
+    - [BTCUSDT, SOLUSDT]
+    - [ETHUSDT, BNBUSDT]
+    - [SOLUSDT, ADAUSDT]
+  garch_is_bars: 2000
+  ewma_lambda: 0.94
+  momentum_lags_bars: [1, 24, 168]
+  hedge_window_days: 14
+  zscore_window_days: 28
+  z_entry: 2.0
+  z_exit: 0.0
+  estimation_fraction: 0.5
+  rebalance_bars: 168
+  fee_rate: 0.001
+  slippage_bps: 2.0
+  initial_quote: 10000.0
+
+portfolio_research:
+  # CAPM/SML diagnostics + walk-forward portfolio candidates.
+  # Weights are fitted on expanding train windows only (no lookahead),
+  # rebalanced once per fold with next-open style cost accounting.
+  universe: [BTCUSDT, ETHUSDT, BNBUSDT, SOLUSDT, XRPUSDT, ADAUSDT]
+  interval: 1h
+  # market_model: ew = equal-weight universe index; btc = BTCUSDT as market proxy
+  market_model: ew
+  capm_alpha_t: 2.0
+  capm_min_sml_r2: 0.6
+  candidates: [equal_weight, min_variance, mvo_shrinkage, risk_parity]
+  walkforward_folds: 3
+  train_fraction: 0.5
+  weight_max: 0.5
+  risk_aversion_gamma: 2.0
+  fee_rate: 0.001
+  slippage_bps: 2.0
+  initial_quote: 10000.0

@@ -1,0 +1,4 @@
+# Optional Microsoft Qlib ML research integration.
+# Qlib's latest stable pip distribution is installed as `pyqlib`.
+# Keep it outside the base requirements so paper/testnet remains lightweight.
+pyqlib==0.9.7

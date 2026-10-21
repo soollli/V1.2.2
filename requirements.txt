@@ -1,0 +1,8 @@
+requests>=2.32.0
+# <3.0: pandas 3.0 switched default datetime resolution to microseconds, which breaks the ns-based time math in tests/test_integrity_v121.py
+pandas>=2.2.0,<3.0
+numpy>=2.0.0
+PyYAML>=6.0.2
+python-dotenv>=1.0.1
+pytest>=8.0.0
+scipy>=1.11.0

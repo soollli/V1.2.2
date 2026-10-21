@@ -1,0 +1,26 @@
+//@version=6
+strategy("Quant MVP - EMA RSI demo", overlay=true, initial_capital=10000, commission_type=strategy.commission.percent, commission_value=0.1)
+
+fastLen = input.int(9, "Fast EMA")
+slowLen = input.int(21, "Slow EMA")
+rsiLen  = input.int(14, "RSI")
+buyMin  = input.float(50, "Buy RSI min")
+sellMax = input.float(50, "Sell RSI max")
+
+fast = ta.ema(close, fastLen)
+slow = ta.ema(close, slowLen)
+r = ta.rsi(close, rsiLen)
+
+longSignal = ta.crossover(fast, slow) and r >= buyMin
+exitSignal = ta.crossunder(fast, slow) and r <= sellMax
+
+if longSignal
+    strategy.entry("L", strategy.long)
+if exitSignal
+    strategy.close("L")
+
+plot(fast, "Fast EMA")
+plot(slow, "Slow EMA")
+
+alertcondition(longSignal, "BUY", '{"signal":"BUY","ticker":"{{ticker}}","close":"{{close}}"}')
+alertcondition(exitSignal, "SELL", '{"signal":"SELL","ticker":"{{ticker}}","close":"{{close}}"}')

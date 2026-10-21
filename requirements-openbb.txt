@@ -1,0 +1,7 @@
+# Optional OpenBB V5 research-data layer. Keep separate from the core environment.
+# Provider namespaces follow the V5 package model.
+openbb-core>=2.0.1
+openbb-cboe>=2.0.0
+openbb-nasdaq>=2.0.0
+openbb-fred>=2.0.0
+openbb-sec>=2.0.0
